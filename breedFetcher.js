@@ -1,22 +1,25 @@
 const request = require('request');
-const userInput = process.argv[2];
 
-request(`https://api.thecatapi.com/v1/breeds/search?q=${userInput}`, function (error, response, body) {
+const fetchBreedDescription = function (breedName, callback) {
+  request(`https://api.thecatapi.com/v1/breeds/search?q=${breedName}`, (error, response, body) => {
+    let returnValue;
+    if (body === '[]') {
+      returnValue = "that search didnt work";
+    }
+    if (error !== null) {
+      returnValue = error['code'];
+    }
+    if (error === null && body !== '[]') {
+      const data = JSON.parse(body);
+      returnValue = data[0]['description'];
+    }
+    
+    callback(returnValue);
+  });
+
   
-  if (error !== null) {
-    console.log("Error with request: ", error['code'], "at ", error['hostname']);
-    return
-  }
-  // Print the error if one occurred
-  console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
-  
-  if (body === '[]') {
-    console.log("that search didnt work");
-    return
-  }
+};
 
-  const data = JSON.parse(body);
-  console.log(data[0]['description']);
-  console.log(typeof data);
+module.exports = {fetchBreedDescription};
 
-});
+
